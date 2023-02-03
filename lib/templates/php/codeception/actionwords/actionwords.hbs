@@ -1,5 +1,6 @@
-<?php{{#if context.meta.php_file_header}}
-{{context.meta.php_file_header}}{{/if}}
+<?php{{#if context.meta.php_actionwords_file_header}}
+{{{context.meta.php_actionwords_file_header}}}{{else}}{{#if context.meta.php_file_header}}
+{{{context.meta.php_file_header}}}{{/if}}{{/if}}
 
 namespace {{> support_namespace }}\Step\{{> suite_name }};
 
