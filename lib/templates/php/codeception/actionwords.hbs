@@ -1,0 +1,16 @@
+<?php{{#if context.meta.php_file_header}}
+{{context.meta.php_file_header}}{{/if}}
+
+namespace {{> support_namespace }};
+
+use Behat\Gherkin\Node\TableNode;
+use Codeception\Actor;
+use PHPUnit\Framework\IncompleteTestError;
+
+class {{> actor_class }} extends Actor
+{{#curly}}{{#indent}}
+{{#strip}}{{#each rendered_children.actionwords as |actionword|}}{{#if actionword}}
+
+{{{actionword}}}{{/if}}{{/each}}{{/strip}}
+{{/indent}}
+{{/curly}}

@@ -19,9 +19,11 @@ describe Hiptest::RenderContextMaker do
         :has_parameters?,
         :has_tags?,
         :has_step?,
+        :has_call?,
         :is_empty?,
         :declared_variables,
         :raw_parameter_names,
+        :raw_parameter_names_ordered_by_pattern,
         :self_name,
       ])
     end
@@ -64,6 +66,23 @@ describe Hiptest::RenderContextMaker do
       end
     end
 
+    context 'has_call?' do
+      it 'is true when there is steps in the body' do
+        expect(subject.walk_item(node)[:has_call?]).to be false
+
+        node.children[:body] << Hiptest::Nodes::Call.new('action')
+        expect(subject.walk_item(node)[:has_call?]).to be true
+      end
+
+      it 'works even if the step is inside another statement' do
+        node.children[:body] << Hiptest::Nodes::While.new('true', [])
+        expect(subject.walk_item(node)[:has_call?]).to be false
+
+        node.children[:body].first.children[:body] << Hiptest::Nodes::Call.new('action', )
+        expect(subject.walk_item(node)[:has_call?]).to be true
+      end
+    end
+
     it 'is_empty? is true when there is no content in the item' do
       expect(subject.walk_item(node)[:is_empty?]).to be true
 
@@ -79,6 +98,18 @@ describe Hiptest::RenderContextMaker do
       node.children[:parameters] << Hiptest::Nodes::Parameter.new('blu blu')
 
       expect(subject.walk_item(node)[:raw_parameter_names]).to eq(['bli', 'bla', 'blu blu'])
+    end
+
+    it ':raw_parameter_names_ordered_by_pattern gives the raw names of the parameters ordered by pattern' do
+      expect(subject.walk_item(node)[:raw_parameter_names_ordered_by_pattern]).to eq(nil)
+
+      node.children[:parameters_ordered_by_pattern] = [
+        Hiptest::Nodes::Parameter.new('bli'),
+        Hiptest::Nodes::Parameter.new('bla'),
+        Hiptest::Nodes::Parameter.new('blu blu'),
+      ]
+
+      expect(subject.walk_item(node)[:raw_parameter_names_ordered_by_pattern]).to eq(['bli', 'bla', 'blu blu'])
     end
   end
 
@@ -98,9 +129,11 @@ describe Hiptest::RenderContextMaker do
         :has_parameters?,
         :has_tags?,
         :has_step?,
+        :has_call?,
         :is_empty?,
         :declared_variables,
         :raw_parameter_names,
+        :raw_parameter_names_ordered_by_pattern,
         :self_name,
         :needs_to_import_actionwords?,
         :relative_package,
@@ -337,6 +370,43 @@ describe Hiptest::RenderContextMaker do
 
     it 'variable_names gives the list of variable names, in order' do
       expect(subject.walk_template(node_with_variables)[:variable_names]).to eq(['x', 'y'])
+    end
+  end
+
+  context 'walk_step' do
+    let(:first_variable_node) { Hiptest::Nodes::Variable.new('x') }
+    let(:second_variable_node) { Hiptest::Nodes::Variable.new('y') }
+    let(:node) { Hiptest::Nodes::Step.new('action', 'My step') }
+    let(:node_with_variables) {
+      Hiptest::Nodes::Step.new('result',
+        Hiptest::Nodes::Template.new([
+          Hiptest::Nodes::StringLiteral.new('The value of '),
+          first_variable_node,
+          Hiptest::Nodes::StringLiteral.new('should equal the one of '),
+          second_variable_node
+       ])
+      )
+    }
+    let(:rendered_subject) {
+      rendered = {}
+      rendered[first_variable_node] = 'rendered-var-x'
+      rendered[second_variable_node] = 'rendered-var-y'
+      subject.instance_variable_set(:@rendered, rendered)
+      subject
+    }
+
+    it 'provides information about the step content' do
+      expect(rendered_subject.walk_step(node).keys).to eq([
+        :parameters,
+      ])
+      expect(rendered_subject.walk_step(node_with_variables).keys).to eq([
+        :parameters,
+      ])
+    end
+
+    it 'parameters contains variables extracted from the child template' do
+      expect(rendered_subject.walk_step(node)[:parameters]).to eq([])
+      expect(rendered_subject.walk_step(node_with_variables)[:parameters]).to eq(['rendered-var-x', 'rendered-var-y'])
     end
   end
 end

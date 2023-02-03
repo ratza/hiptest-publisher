@@ -1,0 +1,7 @@
+
+if (!method_exists($this->I, '{{> step_method_name }}')) {{#curly}}{{#indent}}
+throw new IncompleteTestError('Action `{{> step_method_name }}` is not defined. Implement `public function {{> step_method_name }}({{{ join parameters ', '}}})` in `{{> actor_class }}`.');
+{{/indent}}
+{{/curly}}
+
+$this->I->{{> step_method_name }}({{{ join parameters ', '}}});

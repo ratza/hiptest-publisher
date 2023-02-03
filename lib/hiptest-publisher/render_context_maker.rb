@@ -6,9 +6,11 @@ module Hiptest
         has_parameters?: !item.children[:parameters].empty?,
         has_tags?: !item.children[:tags].empty?,
         has_step?: has_step?(item),
+        has_call?: has_call?(item),
         is_empty?: item.children[:body].empty?,
         declared_variables: item.declared_variables_names,
         raw_parameter_names: item.children[:parameters].map {|p| p.children[:name] },
+        raw_parameter_names_ordered_by_pattern: item.children[:parameters_ordered_by_pattern]&.map {|p| p.children[:name] },
         self_name: item.children[:name]
       }
     end
@@ -157,7 +159,20 @@ module Hiptest
       }
     end
 
+    def walk_step(s)
+      {
+        parameters: s.children[:value].is_a?(Hiptest::Nodes::Template) ? s.children[:value].each_sub_nodes(Hiptest::Nodes::Variable, deep: true).map {|variable| @rendered[variable]} : []
+      }
+    end
+
     private
+
+    def has_call?(item)
+      item.each_sub_nodes(deep: true) do |node|
+        return true if node.is_a?(Hiptest::Nodes::Call)
+      end
+      false
+    end
 
     def has_step?(item)
       item.each_sub_nodes(deep: true) do |node|

@@ -1,0 +1,22 @@
+<?php{{#if context.meta.php_file_header}}
+{{context.meta.php_file_header}}{{/if}}
+
+namespace {{> support_namespace }}\Step\{{> suite_name }};
+
+use Behat\Gherkin\Node\TableNode;
+use PHPUnit\Framework\IncompleteTestError;
+use {{> support_namespace }}\{{> actor_class }};
+
+class ActionWords
+{{#curly}}{{#indent}}
+protected {{> actor_class }} $I;
+
+public function __construct({{> actor_class }} $I)
+{{#curly}}{{#indent}}
+$this->I = $I;
+{{/indent}}
+{{/curly}}{{/indent}}{{#indent}}
+{{#join rendered_children.actionwords '\n' as |actionword|}}
+{{{actionword}}}{{/join}}
+{{/indent}}
+{{/curly}}

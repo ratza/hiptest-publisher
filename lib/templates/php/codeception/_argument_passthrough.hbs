@@ -1,0 +1,1 @@
+{{#if raw_parameter_names_ordered_by_pattern }}{{#join raw_parameter_names_ordered_by_pattern ', ' as |param|}}${{{camelize_lower param}}}{{/join}}{{else}}{{#join raw_parameter_names ', ' as |param|}}${{{camelize_lower param}}}{{/join}}{{/if}}

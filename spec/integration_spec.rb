@@ -55,6 +55,7 @@ describe Hiptest::Publisher do
           %w"seleniumide",
           %w"specflow",
           %w"php phpunit",
+          %w"php codeception",
           %w"behave",
           %w"jbehave",
           %w"behat"
